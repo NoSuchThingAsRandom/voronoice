@@ -1,7 +1,7 @@
-use delaunator::{Point, Triangulation, next_halfedge};
-use crate::{Voronoi, utils::dist2};
+use crate::{utils::dist2, Voronoi};
+use delaunator::{next_halfedge, Point, Triangulation};
 
-use super::{EMPTY};
+use super::EMPTY;
 
 /// Iterator that walks through all the edges connected to a provided starting point.
 /// The iteration happens in a counterclock-wise manner.
@@ -11,7 +11,7 @@ use super::{EMPTY};
 pub struct EdgesAroundSiteIterator<'t> {
     triangulation: &'t Triangulation,
     start: usize,
-    next: usize
+    next: usize,
 }
 
 impl<'t> EdgesAroundSiteIterator<'t> {
@@ -21,7 +21,7 @@ impl<'t> EdgesAroundSiteIterator<'t> {
         Self {
             triangulation,
             start: incoming_edge,
-            next: incoming_edge
+            next: incoming_edge,
         }
     }
 }
@@ -77,7 +77,9 @@ impl<'t> NeighborSiteIterator<'t> {
         // FIXME: this is probably wrong - 2 common vertices are needed for a common edge, but when hull cells are closed
         // same vertice positions are duplicated with new indexes, so simple index comparison here does not work
         // this depends on the fact that at least one of the vertices in common is a original circumcenter
-        self.voronoi.cells[self.source_site].iter().any(|t| self.voronoi.cells[neighbor_site].contains(t))
+        self.voronoi.cells[self.source_site]
+            .iter()
+            .any(|t| self.voronoi.cells[neighbor_site].contains(t))
     }
 }
 
@@ -149,7 +151,7 @@ impl<'t> Iterator for NeighborSiteIterator<'t> {
 pub struct CellPathIterator<'t, F> {
     site: usize,
     cost_fn: F,
-    voronoi: &'t Voronoi
+    voronoi: &'t Voronoi,
 }
 
 impl<'t, F> CellPathIterator<'t, F> {
@@ -160,13 +162,15 @@ impl<'t, F> CellPathIterator<'t, F> {
         Self {
             site,
             cost_fn,
-            voronoi
+            voronoi,
         }
     }
 }
 
 impl<'t, F> Iterator for CellPathIterator<'t, F>
-    where F : Fn(usize, usize) -> f64 {
+where
+    F: Fn(usize, usize) -> f64,
+{
     type Item = usize;
 
     /// Walks current site neighbor and find the next site in the path
@@ -202,7 +206,11 @@ impl<'t, F> Iterator for CellPathIterator<'t, F>
 /// Produces an iterator that calculates the shortest path from start to dest.
 ///
 /// If destination point is outside voronoi diagram, then the closest point to destination in the voronoi diagram will be returned.
-pub fn shortest_path_iter<'v>(voronoi: &'v Voronoi, start: usize, dest: Point) -> impl Iterator<Item = usize> + 'v {
+pub fn shortest_path_iter<'v>(
+    voronoi: &'v Voronoi,
+    start: usize,
+    dest: Point,
+) -> impl Iterator<Item = usize> + 'v {
     CellPathIterator::new(voronoi, start, move |curr, next| {
         // calculate distance
         let dist_to_dest = dist2(&voronoi.sites[curr], &dest);
@@ -220,17 +228,20 @@ pub fn shortest_path_iter<'v>(voronoi: &'v Voronoi, start: usize, dest: Point) -
 
 #[cfg(test)]
 mod test {
-    use delaunator::Point;
-    use crate::VoronoiBuilder;
     use super::*;
+    use crate::VoronoiBuilder;
+    use delaunator::Point;
 
     #[test]
     fn iter_neighbors_hull_test() {
-        let sites = vec![Point { x: -0.5, y: 0.0 }, Point { x: 0.5, y: 0.0 }, Point { x: 0.0, y: 0.0 }, Point { x: 0.0, y: 0.5 }, Point { x: 0.0, y: -0.5 }];
-        let v = VoronoiBuilder::default()
-            .set_sites(sites)
-            .build()
-            .unwrap();
+        let sites = vec![
+            Point { x: -0.5, y: 0.0 },
+            Point { x: 0.5, y: 0.0 },
+            Point { x: 0.0, y: 0.0 },
+            Point { x: 0.0, y: 0.5 },
+            Point { x: 0.0, y: -0.5 },
+        ];
+        let v = VoronoiBuilder::default().set_sites(sites).build().unwrap();
         let neighbors: Vec<usize> = NeighborSiteIterator::new(&v, 0).collect();
         assert_eq!(neighbors.len(), 3, "There are 3 neighboring sites");
         assert_eq!(neighbors[0], 4);
@@ -240,11 +251,14 @@ mod test {
 
     #[test]
     fn iter_neighbors_inner_test() {
-        let sites = vec![Point { x: -0.5, y: 0.0 }, Point { x: 0.5, y: 0.0 }, Point { x: 0.0, y: 0.0 }, Point { x: 0.0, y: 0.5 }, Point { x: 0.0, y: -0.5 }];
-        let v = VoronoiBuilder::default()
-            .set_sites(sites)
-            .build()
-            .unwrap();
+        let sites = vec![
+            Point { x: -0.5, y: 0.0 },
+            Point { x: 0.5, y: 0.0 },
+            Point { x: 0.0, y: 0.0 },
+            Point { x: 0.0, y: 0.5 },
+            Point { x: 0.0, y: -0.5 },
+        ];
+        let v = VoronoiBuilder::default().set_sites(sites).build().unwrap();
         let neighbors: Vec<usize> = NeighborSiteIterator::new(&v, 2).collect();
         assert_eq!(neighbors.len(), 4, "There are 4 neighboring sites");
         assert_eq!(neighbors[0], 3);
@@ -266,7 +280,6 @@ mod test {
     //         [0.2, -0.5],
     //         [0.3, -0.5],
     //     */
-
     //     // need to find a way to remove delauney neighbors whose voronoi edges were clipped out
     //     // comparing edge is one way, comparing circumcenters is another https://github.com/d3/d3-delaunay/pull/98/files
     //     let sites = vec![Point { x: -1.0, y: -1.0 }, Point { x: 0.0, y: -1.0 }, Point { x: -0.45, y: -0.95 }];
@@ -283,8 +296,12 @@ mod test {
     fn iter_cell_path_test() {
         let sites = vec![
             Point { x: -0.5, y: 0.0 },
-            Point { x: 0.0, y: 0.0 }, Point { x: 0.0, y: 0.5 }, Point { x: 0.0, y: -0.5 },
-            Point { x: 0.2, y: 0.0 }, Point { x: 0.2, y: 0.5 }, Point { x: 0.2, y: -0.5 },
+            Point { x: 0.0, y: 0.0 },
+            Point { x: 0.0, y: 0.5 },
+            Point { x: 0.0, y: -0.5 },
+            Point { x: 0.2, y: 0.0 },
+            Point { x: 0.2, y: 0.5 },
+            Point { x: 0.2, y: -0.5 },
             Point { x: 0.5, y: 0.0 },
         ];
         let v = VoronoiBuilder::default()

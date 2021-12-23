@@ -1,4 +1,4 @@
-use delaunator::{Point, Triangulation, next_halfedge};
+use delaunator::{next_halfedge, Point, Triangulation};
 
 /// Gets the index of the triangle (starting half-edge) this half-edge belongs to.
 #[inline]
@@ -14,7 +14,7 @@ pub fn site_of_incoming(triangulation: &Triangulation, e: usize) -> usize {
 }
 
 pub fn calculate_approximated_cetroid<'a>(points: impl Iterator<Item = &'a Point>) -> Point {
-    let mut r = Point { x: 0.0 , y: 0.0 };
+    let mut r = Point { x: 0.0, y: 0.0 };
     let mut n = 0;
     for p in points {
         r.x += p.x;
@@ -55,9 +55,5 @@ pub fn dist2(a: &Point, b: &Point) -> f64 {
 
 #[inline]
 pub fn abs_diff_eq(a: f64, b: f64, epsilon: f64) -> bool {
-    (if a > b {
-        a - b
-    } else {
-        b - a
-    }) <= epsilon
+    (if a > b { a - b } else { b - a }) <= epsilon
 }

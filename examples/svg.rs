@@ -1,6 +1,6 @@
 use rand::Rng;
-use voronoice::{BoundingBox, Point, Voronoi, VoronoiBuilder};
 use std::{fs::File, io::Write};
+use voronoice::{BoundingBox, Point, Voronoi, VoronoiBuilder};
 const CANVAS_SIZE: f64 = 800.;
 const POINT_SIZE: usize = 2;
 const SITE_COLOR: &str = "black";
@@ -14,13 +14,23 @@ fn main() -> std::io::Result<()> {
     let x_range = rand::distributions::Uniform::new(0., CANVAS_SIZE * 0.8);
     let y_range = rand::distributions::Uniform::new(0., CANVAS_SIZE * 0.8);
     let sites = (0..SIZE)
-        .map(move |_| Point { x: rng.sample(x_range), y: rng.sample(y_range) })
+        .map(move |_| Point {
+            x: rng.sample(x_range),
+            y: rng.sample(y_range),
+        })
         .collect::<Vec<Point>>();
 
-        // build voronoi
+    // build voronoi
     let voronoi = VoronoiBuilder::default()
         .set_sites(sites)
-        .set_bounding_box(BoundingBox::new(Point { x: CANVAS_SIZE / 2.0, y: CANVAS_SIZE / 2.0 }, CANVAS_SIZE * 0.95, CANVAS_SIZE * 0.95))
+        .set_bounding_box(BoundingBox::new(
+            Point {
+                x: CANVAS_SIZE / 2.0,
+                y: CANVAS_SIZE / 2.0,
+            },
+            CANVAS_SIZE * 0.95,
+            CANVAS_SIZE * 0.95,
+        ))
         .set_lloyd_relaxation_iterations(5)
         .build()
         .expect("Couldn't build voronoi");

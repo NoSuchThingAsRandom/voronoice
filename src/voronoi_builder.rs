@@ -1,5 +1,5 @@
-use super::{BoundingBox, ClipBehavior, Point, Voronoi};
 use super::utils::calculate_approximated_cetroid;
+use super::{BoundingBox, ClipBehavior, Point, Voronoi};
 
 /// Provides a convenient way to construct a Voronoi diagram.
 #[derive(Default)]
@@ -11,7 +11,6 @@ pub struct VoronoiBuilder {
 }
 
 impl VoronoiBuilder {
-
     /// Sets the [BoundingBox] that will be used to enclose the graph.
     ///
     /// Default value is [BoundingBox::default()].
@@ -64,7 +63,9 @@ impl VoronoiBuilder {
     /// Panics if no sites have been provided through [Self::set_sites] or one of the generate_*_sites methods.
     pub fn build(mut self) -> Option<Voronoi> {
         let v = Voronoi::new(
-            self.sites.take().expect("Cannot build voronoi without sites. Call set_sites() first."),
+            self.sites
+                .take()
+                .expect("Cannot build voronoi without sites. Call set_sites() first."),
             self.bounding_box.clone(),
             self.clip_behavior,
         );
@@ -76,7 +77,9 @@ impl VoronoiBuilder {
         for _ in 0..self.lloyd_iterations {
             if let Some(voronoi) = v {
                 // get vertices for each cell and approximate centroid
-                let new_sites = voronoi.iter_cells().map(|c| calculate_approximated_cetroid(c.iter_vertices()))
+                let new_sites = voronoi
+                    .iter_cells()
+                    .map(|c| calculate_approximated_cetroid(c.iter_vertices()))
                     .collect::<Vec<Point>>();
 
                 // recompute new voronoi with sites after relaxation
@@ -102,7 +105,7 @@ impl VoronoiBuilder {
             let a = (i as f64 * 360.0 / len as f64).to_radians();
             sites.push(Point {
                 x: r * a.sin(),
-                y: r * a.cos()
+                y: r * a.cos(),
             });
         }
 
@@ -120,7 +123,7 @@ impl VoronoiBuilder {
             for j in 0..height {
                 sites.push(Point {
                     x: i as f64 / fwidth - 0.5,
-                    y: j as f64/ fheight - 0.5
+                    y: j as f64 / fheight - 0.5,
                 });
             }
         }
