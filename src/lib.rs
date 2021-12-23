@@ -50,6 +50,7 @@ mod voronoi_cell;
 mod iterator;
 mod utils;
 mod voronoi_builder;
+mod error;
 
 use delaunator::{EMPTY, Triangulation, triangulate};
 use self::{
