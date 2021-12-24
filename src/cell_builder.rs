@@ -1,6 +1,7 @@
 use crate::error::Error;
 use crate::utils::abs_diff_eq;
 use delaunator::{Triangulation, EMPTY, EPSILON};
+use log::warn;
 use std::{assert_eq, iter::once};
 use utils::triangle_of_edge;
 
@@ -124,8 +125,7 @@ impl CellBuilder {
         if self.clip_behavior == ClipBehavior::Clip {
             for cell in cells.iter_mut() {
                 if let Err(e) = self.clip_and_close_cell(cell) {
-                    // TODO Change to log
-                    println!("{}", e);
+                    warn!("{}", e);
                 }
             }
         }

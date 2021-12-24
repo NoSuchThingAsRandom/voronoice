@@ -12,6 +12,7 @@ readme = "README.md"
 
 [dependencies]
 delaunator = { version = "^1" }
+log = "0.4"
 
 [dev-dependencies]
 criterion = "0.3.3"
